@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const MyApp());
@@ -48,6 +49,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // this is name channel
+  static const platform = MethodChannel('com.example.democallnative/payment');
+
   int _counter = 0;
 
   void _incrementCounter() {
@@ -58,6 +62,24 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+    });
+  }
+
+  // Get battery level.
+  String res = '';
+
+  Future<void> _requestPayment() async {
+    String _res;
+    try {
+      final int result = await platform
+          .invokeMethod('requestPayment'); // this is name method in native
+      _res = 'request payment success $result % .';
+    } on PlatformException catch (e) {
+      _res = "request payment failed: '${e.message}'.";
+    }
+
+    setState(() {
+      res = _res;
     });
   }
 
@@ -95,13 +117,13 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              res,
             ),
+            TextButton(
+              onPressed: _requestPayment,
+              child: Text('Request'),
+            )
           ],
         ),
       ),
